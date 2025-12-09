@@ -18,7 +18,7 @@ int main(){
     }
 
     while(!glfwWindowShouldClose(window)) {
-        
+        glfwPollEvents();
     }
 
     printf("hello world!\n");
