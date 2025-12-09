@@ -1,26 +1,16 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <GLFW/glfw3.h>
 
-#define RETRY_MAX 5
+#include "vanilla.h"
 
 int main(){
 
-    if (!glfwInit()) {
-        printf("failed to init glfw.\n");
+    if(!vanilla_init("Vanilla 0.1")) {
         exit(1);
     }
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Vanilla v0.1", NULL, NULL);
-    if (!window) {
-        printf("failed to create window.\n");
-        exit(1);
-    }
+    vanilla_run();
 
-    while(!glfwWindowShouldClose(window)) {
-        glfwPollEvents();
-    }
+    vanilla_shutdown();
 
-    printf("hello world!\n");
     return 0;
 }
