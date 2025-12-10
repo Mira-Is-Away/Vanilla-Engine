@@ -4,8 +4,8 @@
 
 int main(){
 
-    if(!vanilla_init("Vanilla 0.1")) {
-        exit(1);
+    if(!vanilla_init("My sandbox - Vanilla")) {
+        exit(EXIT_FAILURE);
     }
 
     vanilla_run();

@@ -24,6 +24,7 @@ add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME} PRIVATE
     main.c
     src/vanilla.c
+    src/vkcontext.c
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
