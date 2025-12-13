@@ -51,8 +51,7 @@ VkContext* vk_context_init(const char* app_name) {
 
     VkResult result = vkCreateInstance(ctx->create_info, NULL, instance);
     if (result != VK_SUCCESS) {
-        printf("Failed to create Vulkan instance.\n");
-        exit(1);
+        return NULL;
     }
 
     ctx->instance = instance;

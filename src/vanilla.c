@@ -9,12 +9,12 @@
 
 typedef struct VanillaContext {
     GLFWwindow* window;
-    VkContext* renderer;
+    VkContext* vkctx;
 } VanillaContext;
 
 static VanillaContext vnl_ctx;
 
-int vanilla_init(const char* window_name) {
+int vanilla_init(const char* app_name) {
     if (!glfwInit()) {
         printf("failed to init glfw.\n");
         return 0;
@@ -22,7 +22,8 @@ int vanilla_init(const char* window_name) {
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, window_name, NULL, NULL);
+    const char* app_name_final = app_name == NULL ? "Untitled Project" : app_name;
+    GLFWwindow* window = glfwCreateWindow(800, 600, app_name_final, NULL, NULL);
     if (!window) {
         printf("Failed to create window.\n");
         return 0;
@@ -34,7 +35,13 @@ int vanilla_init(const char* window_name) {
 
     vnl_ctx.window = window;
 
-    vnl_ctx.renderer = vk_context_init(window_name);
+    VkContext* vkctx = vk_context_init(app_name_final);
+    if (vkctx == NULL) {
+        printf("Failed to create Vulkan instance.\n");
+        return 0;
+    }
+
+    vnl_ctx.vkctx = vkctx;
 
     printf("Vanilla has initialised successfully.\n");
     return 1;
@@ -47,7 +54,7 @@ void vanilla_run() {
 }
 
 void vanilla_shutdown() {
-    vk_context_destroy(vnl_ctx.renderer);
+    vk_context_destroy(vnl_ctx.vkctx);
     glfwDestroyWindow(vnl_ctx.window);
     printf("Vanilla has shutdown successfully.\n");
 }
