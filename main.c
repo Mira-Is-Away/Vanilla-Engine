@@ -4,7 +4,7 @@
 
 int main(){
 
-    if(!vanilla_init("My sandbox - Vanilla")) {
+    if(!vanilla_init("")) {
         exit(EXIT_FAILURE);
     }
 

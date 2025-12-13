@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <vulkan/vulkan.h>
 
 #include "vkcontext.h"
@@ -22,7 +23,7 @@ int vanilla_init(const char* app_name) {
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    const char* app_name_final = app_name == NULL ? "Untitled Project" : app_name;
+    const char* app_name_final = strcmp(app_name, "") ? app_name : "Untitled Vanilla Project";
     GLFWwindow* window = glfwCreateWindow(800, 600, app_name_final, NULL, NULL);
     if (!window) {
         printf("Failed to create window.\n");
