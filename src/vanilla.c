@@ -15,7 +15,7 @@ typedef struct VanillaContext {
 
 static VanillaContext vnl_ctx;
 
-int vanilla_init(const char* app_name) {
+int vanilla_init(const char* app_name, int width, int height) {
     if (!glfwInit()) {
         printf("failed to init glfw.\n");
         return 0;
@@ -23,8 +23,15 @@ int vanilla_init(const char* app_name) {
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    const char* app_name_final = strcmp(app_name, "") ? app_name : "Untitled Vanilla Project";
-    GLFWwindow* window = glfwCreateWindow(800, 600, app_name_final, NULL, NULL);
+    // Appllying default window name
+    const char* app_name_final = NULL;
+    if (app_name == NULL) {
+        app_name_final = VNL_DEFAULT_APP_NAME;
+    } else {
+        app_name_final = strcmp(app_name, "") ? app_name : VNL_DEFAULT_APP_NAME;
+    }
+
+    GLFWwindow* window = glfwCreateWindow(width, height, app_name_final, NULL, NULL);
     if (!window) {
         printf("Failed to create window.\n");
         return 0;

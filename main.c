@@ -4,7 +4,7 @@
 
 int main(){
 
-    if(!vanilla_init("")) {
+    if(!vanilla_init(NULL, 800, 600)) {
         exit(EXIT_FAILURE);
     }
 
