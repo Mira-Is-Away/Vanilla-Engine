@@ -7,6 +7,7 @@
 #include <vulkan/vulkan.h>
 
 #include "vkcontext.h"
+#include "vnl_ints.h"
 
 typedef struct VanillaContext {
     GLFWwindow* window;
@@ -37,7 +38,7 @@ int vanilla_init(const char* app_name, int width, int height) {
         return 0;
     }
 
-    uint32_t extension_count = 0;
+    u32 extension_count = 0;
     vkEnumerateInstanceExtensionProperties(NULL, &extension_count, NULL);
     printf("%d vulkan extensions supported.\n", extension_count);
 
@@ -64,5 +65,5 @@ void vanilla_run() {
 void vanilla_shutdown() {
     vk_context_destroy(vnl_ctx.vkctx);
     glfwDestroyWindow(vnl_ctx.window);
-    printf("Vanilla has shutdown successfully.\n");
+    printf("Vanilla has shut down successfully.\n");
 }
