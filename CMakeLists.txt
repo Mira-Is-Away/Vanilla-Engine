@@ -25,6 +25,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     main.c
     src/vanilla.c
     src/vkcontext.c
+    src/vnl_ds/vnl_list.c
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
