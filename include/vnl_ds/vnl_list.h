@@ -34,35 +34,43 @@ typedef struct VNL_List {
 
 /**
  * @brief Simple iteration over the list links.
+ * @param ptr A valid pointer to the desired object type.
+ * @param list Pointer to the list object.
  */
-#define vnl_list_for_each(pos, list) \
-    for (pos = (list)->head; pos != NULL; pos = pos->next)
+#define vnl_list_for_each(ptr, list) \
+    for (ptr = (list)->head; ptr != NULL; ptr = ptr->next)
 
 /**
  * @brief Iteration safe against removal of the current link.
+ * @param ptr A valid pointer to the desired object type.
+ * @param next Must be another valid pointer of the desired object type. Used for internal safety safeguards.
+ * param list Pointer to the list object.
  */
-#define vnl_list_for_each_safe(pos, next, list) \
-    for (pos = (list)->head, next = (pos ? pos->next : NULL); \
-         pos != NULL; \
-         pos = next, next = (pos ? pos->next : NULL))
+#define vnl_list_for_each_safe(ptr, next, list) \
+    for (ptr = (list)->head, next = (ptr ? ptr->next : NULL); \
+         ptr != NULL; \
+         ptr = next, next = (ptr ? ptr->next : NULL))
 
 /**
  * @brief Iterates over the list and provides the parent structure pointer directly.
+ * @param ptr A valid pointer to the desired object type.
+ * @param list Pointer to the list object.
+ * @param member The desired member of the struct you wish to retrieve.
  */
-#define vnl_list_for_each_entry(pos, list, member) \
-    for (pos = ((list)->head ? vnl_container_of((list)->head, __typeof__(*pos), member) : NULL); \
-         pos != NULL; \
-         pos = (pos->member.next ? vnl_container_of(pos->member.next, __typeof__(*pos), member) : NULL))
+#define vnl_list_for_each_entry(ptr, list, member) \
+    for (ptr = ((list)->head ? vnl_container_of((list)->head, __typeof__(*ptr), member) : NULL); \
+         ptr != NULL; \
+         ptr = (ptr->member.next ? vnl_container_of(ptr->member.next, __typeof__(*ptr), member) : NULL))
 
 /**
  * @brief Iterates over the list entries safely (allows removal).
  */
-#define vnl_list_for_each_entry_safe(pos, next, list, member) \
-    for (pos = ((list)->head ? vnl_container_of((list)->head, __typeof__(*pos), member) : NULL), \
-         next = ((pos && pos->member.next) ? vnl_container_of(pos->member.next, __typeof__(*pos), member) : NULL); \
-         pos != NULL; \
-         pos = next, \
-         next = ((pos && pos->member.next) ? vnl_container_of(pos->member.next, __typeof__(*pos), member) : NULL))
+#define vnl_list_for_each_entry_safe(ptr, next, list, member) \
+    for (ptr = ((list)->head ? vnl_container_of((list)->head, __typeof__(*ptr), member) : NULL), \
+         next = ((ptr && ptr->member.next) ? vnl_container_of(ptr->member.next, __typeof__(*ptr), member) : NULL); \
+         ptr != NULL; \
+         ptr = next, \
+         next = ((ptr && ptr->member.next) ? vnl_container_of(ptr->member.next, __typeof__(*ptr), member) : NULL))
 
 
 /**

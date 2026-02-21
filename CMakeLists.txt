@@ -36,5 +36,3 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glfw
     vulkan
 )
-
-# target_link_libraries(${PROJECT_NAME} PRIVATE )

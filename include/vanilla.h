@@ -12,6 +12,7 @@
 
 #define GLFW_INCLUDE_VULKAN
 #define VNL_DEFAULT_APP_NAME "Untitled Vanilla Project"
+#define VNL_ENGINE_VERSION "0.1a"
 
 typedef struct VanillaContext VanillaContext;
 
@@ -23,16 +24,16 @@ typedef struct VanillaContext VanillaContext;
  * @retval 1 If initialisation was successfull.
  * @retval 0 If initialisation failed.
  */
-int vanilla_init(const char* app_name, int width, int height);
+int vnl_init(const char* app_name, int width, int height);
 
 /**
  * @brief Runs the engine's main loop.
  */
-void vanilla_run();
+void vnl_run();
 
 /**
  * @brief Shuts down the engine, deallocating all used memory.
  */
-void vanilla_shutdown();
+void vnl_shutdown();
 
 #endif

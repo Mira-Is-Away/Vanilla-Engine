@@ -16,7 +16,7 @@ typedef struct VanillaContext {
 
 static VanillaContext vnl_ctx;
 
-int vanilla_init(const char* app_name, int width, int height) {
+int vnl_init(const char* app_name, int width, int height) {
     if (!glfwInit()) {
         printf("failed to init glfw.\n");
         return 0;
@@ -56,13 +56,16 @@ int vanilla_init(const char* app_name, int width, int height) {
     return 1;
 }
 
-void vanilla_run() {
+void vnl_run() {
+    /*
     while(!glfwWindowShouldClose(vnl_ctx.window)) {
         glfwPollEvents();
-    }
+    }*/
+
+    printf("vnl_run() has been called.")
 }
 
-void vanilla_shutdown() {
+void vnl_shutdown() {
     vk_context_destroy(vnl_ctx.vkctx);
     glfwDestroyWindow(vnl_ctx.window);
     printf("Vanilla has shut down successfully.\n");
