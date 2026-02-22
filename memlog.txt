@@ -1,3 +1,0 @@
-20 vulkan extensions supported.
-Vanilla has initialised successfully.
-Vanilla has shutdown successfully.
