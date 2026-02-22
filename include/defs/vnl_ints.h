@@ -1,5 +1,14 @@
-#ifndef VANILLA_INCLUDE_VNL_INTS_H
-#define VANILLA_INCLUDE_VNL_INTS_H
+/**
+ * @file vnl_ints.h
+ * 
+ * Useful general-purpose macros defined and used by the engine.
+ * 
+ * @author Henry R
+ * @date 2026-02-21
+ */
+
+#ifndef VANILLA_DEFS_INCLUDE_VNL_INTS_H
+#define VANILLA_DEFS_INCLUDE_VNL_INTS_H
 
 #include <stdint.h>
 

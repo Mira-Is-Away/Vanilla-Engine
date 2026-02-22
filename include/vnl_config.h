@@ -1,0 +1,10 @@
+#ifndef VANILLA_CONFIG_H_
+#define VANILLA_CONFIG_H_
+
+#define VNL_GAME_NAME "Test Sandbox"
+
+#define VNL_GAME_VERSION_MAJOR 0
+#define VNL_GAME_VERSION_MINOR 1
+#define VNL_GAME_VERSION_PATCH 0
+
+#endif

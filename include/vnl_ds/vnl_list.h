@@ -1,8 +1,17 @@
-#ifndef VANILLA_INCLUDE_VNL_DS_LIST_H_
-#define VANILLA_INCLUDE_VNL_DS_LIST_H_
+/**
+ * @file vnl_list.h
+ * 
+ * Intrusive doubly-linked list and associated functions and macros
+ * 
+ * @author Henry R
+ * @date 2026-02-16
+ */
+
+#ifndef VANILLA_VNL_DS_LIST_H_
+#define VANILLA_VNL_DS_LIST_H_
 
 #include <stddef.h>
-#include "vnl_ints.h"
+#include "defs/vnl_ints.h"
 
 /**
  * @struct VNL_List_Link
@@ -34,17 +43,17 @@ typedef struct VNL_List {
 
 /**
  * @brief Simple iteration over the list links.
- * @param ptr A valid pointer to the desired object type.
- * @param list Pointer to the list object.
+ * @param ptr A valid pointer to the desired object's type.
+ * @param list Pointer to the list link.
  */
 #define vnl_list_for_each(ptr, list) \
     for (ptr = (list)->head; ptr != NULL; ptr = ptr->next)
 
 /**
  * @brief Iteration safe against removal of the current link.
- * @param ptr A valid pointer to the desired object type.
+ * @param ptr A valid pointer to the desired object's type.
  * @param next Must be another valid pointer of the desired object type. Used for internal safety safeguards.
- * param list Pointer to the list object.
+ * param list Pointer to the list link.
  */
 #define vnl_list_for_each_safe(ptr, next, list) \
     for (ptr = (list)->head, next = (ptr ? ptr->next : NULL); \
@@ -53,8 +62,8 @@ typedef struct VNL_List {
 
 /**
  * @brief Iterates over the list and provides the parent structure pointer directly.
- * @param ptr A valid pointer to the desired object type.
- * @param list Pointer to the list object.
+ * @param ptr A valid pointer to the desired object's type.
+ * @param list Pointer to the list link.
  * @param member The desired member of the struct you wish to retrieve.
  */
 #define vnl_list_for_each_entry(ptr, list, member) \
@@ -64,7 +73,13 @@ typedef struct VNL_List {
 
 /**
  * @brief Iterates over the list entries safely (allows removal).
+ * @param ptr A valid pointer to the desired object's type.
+ * @param next A pointer of the same type as entry. The macro will use it to iterate over the list. It doesn't need to be initialised.
+ * @param list A pointer to the list link.
+ * @param member The desirerd member of the struct you wish to retrieve.
  */
+
+// 26-02-21 - a couple days ago only i and god knew what i meant with this macro definition. now only god knows
 #define vnl_list_for_each_entry_safe(ptr, next, list, member) \
     for (ptr = ((list)->head ? vnl_container_of((list)->head, __typeof__(*ptr), member) : NULL), \
          next = ((ptr && ptr->member.next) ? vnl_container_of(ptr->member.next, __typeof__(*ptr), member) : NULL); \

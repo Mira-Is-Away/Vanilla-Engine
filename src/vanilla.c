@@ -6,8 +6,8 @@
 #include <string.h>
 #include <vulkan/vulkan.h>
 
-#include "vkcontext.h"
-#include "vnl_ints.h"
+#include "vulkan/vkcontext.h"
+#include "defs/vnl_ints.h"
 
 typedef struct VanillaContext {
     GLFWwindow* window;
@@ -16,7 +16,7 @@ typedef struct VanillaContext {
 
 static VanillaContext vnl_ctx;
 
-int vnl_init(const char* app_name, int width, int height) {
+int vnl_init(int width, int height) {
     if (!glfwInit()) {
         printf("failed to init glfw.\n");
         return 0;
@@ -24,15 +24,7 @@ int vnl_init(const char* app_name, int width, int height) {
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    // Appllying default window name
-    const char* app_name_final = NULL;
-    if (app_name == NULL) {
-        app_name_final = VNL_DEFAULT_APP_NAME;
-    } else {
-        app_name_final = strcmp(app_name, "") ? app_name : VNL_DEFAULT_APP_NAME;
-    }
-
-    GLFWwindow* window = glfwCreateWindow(width, height, app_name_final, NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(width, height, VNL_GAME_NAME, NULL, NULL);
     if (!window) {
         printf("Failed to create window.\n");
         return 0;
@@ -44,7 +36,7 @@ int vnl_init(const char* app_name, int width, int height) {
 
     vnl_ctx.window = window;
 
-    VkContext* vkctx = vk_context_init(app_name_final);
+    VkContext* vkctx = vk_context_init();
     if (vkctx == NULL) {
         printf("Failed to create Vulkan instance.\n");
         return 0;
@@ -62,7 +54,7 @@ void vnl_run() {
         glfwPollEvents();
     }*/
 
-    printf("vnl_run() has been called.")
+    printf("vnl_run() has been called. This function is currently a dummy; Shutting down...\n");
 }
 
 void vnl_shutdown() {

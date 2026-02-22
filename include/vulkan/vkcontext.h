@@ -8,8 +8,8 @@
  * @date 2025-12-09
  */
 
-#ifndef VANILLA_VKCONTEXT_H_
-#define VANILLA_VKCONTEXT_H_
+#ifndef VANILLA_VULKAN_VKCONTEXT_H_
+#define VANILLA_VULKAN_VKCONTEXT_H_
 
 #include <vulkan/vulkan.h>
 
@@ -25,11 +25,10 @@ typedef struct VkContext {
 
 /**
  * @brief Initialises a Vulkan context instance.
- * @param[in] app_name Name of the Vanilla application being created.
  * @return Returns a pointer to valid VkContext.
  * @retval NULL If context initialisation fails.
  */
-VkContext* vk_context_init(const char* app_name);
+VkContext* vk_context_init();
 
 /**
  * @brief Destroys a given Vulkan context instance.
