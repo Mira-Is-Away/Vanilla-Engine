@@ -7,8 +7,8 @@
  * @date 2026-02-21
  */
 
-#ifndef VANILLA_DEFS_INCLUDE_VNL_INTS_H
-#define VANILLA_DEFS_INCLUDE_VNL_INTS_H
+#ifndef VANILLA_MISC_INCLUDE_VNL_INTS_H
+#define VANILLA_MISC_INCLUDE_VNL_INTS_H
 
 #include <stdint.h>
 

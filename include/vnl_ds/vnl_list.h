@@ -11,7 +11,7 @@
 #define VANILLA_VNL_DS_LIST_H_
 
 #include <stddef.h>
-#include "defs/vnl_ints.h"
+#include "misc/vnl_ints.h"
 
 /**
  * @struct VNL_List_Link

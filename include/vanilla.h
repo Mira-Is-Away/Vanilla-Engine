@@ -10,11 +10,19 @@
 #ifndef VANILLA_VANILLA_H_
 #define VANILLA_VANILLA_H_
 
-#include "defs/vnl_macros.h"
+typedef struct GLFWwindow GLFWwindow;
+
+#include "misc/vnl_macros.h"
+#include "misc/vnl_status.h"
+#include "misc/vnl_structs.h"
+#include "vulkan/vkcontext.h"
 
 #define GLFW_INCLUDE_VULKAN
 
-typedef struct VanillaContext VanillaContext;
+typedef struct VnlContext{
+    VnlConfig* config;
+    VkContext* vkctx;
+} VnlContext;
 
 /**
  * @brief Initialises the engine and its components.
@@ -23,7 +31,7 @@ typedef struct VanillaContext VanillaContext;
  * @retval 1 If initialisation was successfull.
  * @retval 0 If initialisation failed.
  */
-int vnl_init(int width, int height);
+VnlStatus vnl_init(VnlConfig* config);
 
 /**
  * @brief Runs the engine's main loop.

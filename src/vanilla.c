@@ -7,45 +7,42 @@
 #include <vulkan/vulkan.h>
 
 #include "vulkan/vkcontext.h"
-#include "defs/vnl_ints.h"
+#include "misc/vnl_ints.h"
 
-typedef struct VanillaContext {
-    GLFWwindow* window;
-    VkContext* vkctx;
-} VanillaContext;
+static VnlContext vnl_ctx;
 
-static VanillaContext vnl_ctx;
-
-int vnl_init(int width, int height) {
+VnlStatus vnl_init(VnlConfig* config) {
     if (!glfwInit()) {
         printf("failed to init glfw.\n");
-        return 0;
+        return FAILURE;
     }
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    GLFWwindow* window = glfwCreateWindow(width, height, VNL_GAME_NAME, NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(config->window.width,
+                                          config->window.height,
+                                          config->title, NULL, NULL);
     if (!window) {
         printf("Failed to create window.\n");
-        return 0;
+        return FAILURE;
     }
+    config->window.pointer = window;
 
     u32 extension_count = 0;
     vkEnumerateInstanceExtensionProperties(NULL, &extension_count, NULL);
     printf("%d vulkan extensions supported.\n", extension_count);
 
-    vnl_ctx.window = window;
-
-    VkContext* vkctx = vk_context_init();
+    VkContext* vkctx = vk_context_init(config);
     if (vkctx == NULL) {
         printf("Failed to create Vulkan instance.\n");
-        return 0;
+        return FAILURE;
     }
 
     vnl_ctx.vkctx = vkctx;
+    vnl_ctx.config = config;
 
     printf("Vanilla has initialised successfully.\n");
-    return 1;
+    return SUCCESS;
 }
 
 void vnl_run() {
@@ -59,6 +56,6 @@ void vnl_run() {
 
 void vnl_shutdown() {
     vk_context_destroy(vnl_ctx.vkctx);
-    glfwDestroyWindow(vnl_ctx.window);
+    glfwDestroyWindow(vnl_ctx.config->window.pointer);
     printf("Vanilla has shut down successfully.\n");
 }

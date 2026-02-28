@@ -13,6 +13,8 @@
 
 #include <vulkan/vulkan.h>
 
+typedef struct VnlConfig VnlConfig;
+
 /**
  * @struct VkContext
  * @brief Holds pointers to Vulkan context information.
@@ -28,7 +30,7 @@ typedef struct VkContext {
  * @return Returns a pointer to valid VkContext.
  * @retval NULL If context initialisation fails.
  */
-VkContext* vk_context_init();
+VkContext* vk_context_init(VnlConfig* config);
 
 /**
  * @brief Destroys a given Vulkan context instance.

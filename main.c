@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "vnl_config.h"
 #include "vanilla.h"
 
 int main(){
@@ -16,7 +15,12 @@ int main(){
     fine too, since Vanilla will only render to a
     single window.
     */
-    if(!vnl_init(800, 600)) {
+
+    VnlConfig config = VNL_DEFAULT_CONFIG;
+    config.title = "Test Sandbox";
+    config.version.minor = 1;
+
+    if(vnl_init(&config) == FAILURE) {
         exit(EXIT_FAILURE);
     }
 

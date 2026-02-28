@@ -6,18 +6,19 @@
 #include <string.h>
 #include <GLFW/glfw3.h>
 
-#include "defs/vnl_macros.h"
+#include "misc/vnl_macros.h"
+#include "misc/vnl_structs.h"
 
-static void vk_context_init_app_info(VkContext* ctx) {
+static void vk_context_init_app_info(VkContext* ctx, const VnlConfig* config) {
     VkApplicationInfo* app_info = malloc(sizeof(VkApplicationInfo));
 
     app_info->sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     app_info->pNext = NULL;
-    app_info->pApplicationName = VNL_GAME_NAME;
+    app_info->pApplicationName = config->title;
     app_info->applicationVersion = VK_MAKE_VERSION(
-        VNL_GAME_VERSION_MAJOR,
-        VNL_GAME_VERSION_MINOR,
-        VNL_GAME_VERSION_PATCH
+        config->version.major,
+        config->version.minor,
+        config->version.patch
     );
     app_info->pEngineName = "Vanilla";
     app_info->engineVersion = VK_MAKE_VERSION(
@@ -34,10 +35,10 @@ static void vk_context_init_app_info(VkContext* ctx) {
     );
 
     printf("%s build version %d.%d.%d\n",
-        VNL_GAME_NAME,
-        VNL_GAME_VERSION_MAJOR,
-        VNL_GAME_VERSION_MINOR,
-        VNL_GAME_VERSION_PATCH
+        config->title,
+        config->version.major,
+        config->version.minor,
+        config->version.patch
     );
 
     ctx->app_info = app_info;
@@ -63,12 +64,12 @@ static void vk_context_init_instance_create_info(VkContext* ctx) {
     ctx->create_info = create_info;
 }
 
-VkContext* vk_context_init() {
+VkContext* vk_context_init(VnlConfig* config) {
 
     VkContext* ctx = malloc(sizeof(VkContext));
     VkInstance* instance = malloc(sizeof(VkInstance));
 
-    vk_context_init_app_info(ctx);
+    vk_context_init_app_info(ctx, config);
     vk_context_init_instance_create_info(ctx);
 
     VkResult result = vkCreateInstance(ctx->create_info, NULL, instance);
