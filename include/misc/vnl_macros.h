@@ -22,7 +22,8 @@
 #define VNL_DEFAULT_CONFIG { \
     .window = {1280, 720, NULL}, \
     .title = "Untiled Vanilla Project", \
-    .version = {0, 0, 0} \
+    .version = {0, 0, 0}, \
+    .target_fps = 60.0f \
 }
 
 #endif
