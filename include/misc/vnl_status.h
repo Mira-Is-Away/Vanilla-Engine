@@ -11,8 +11,8 @@
 #define VANILLA_MISC_VNL_STATUS_H_
 
 typedef enum VnlStatus {
-    SUCCESS = 0,
-    FAILURE = 1,
+    FAILURE = 0,
+    SUCCESS = 1,
     WARNING = 2
 } VnlStatus;
 

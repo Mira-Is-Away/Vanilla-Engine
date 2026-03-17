@@ -1,7 +1,7 @@
 /**
  * @file vnl_ints.h
  * 
- * Useful general-purpose macros defined and used by the engine.
+ * A list of typedefs for more convenient fixed-size data types.
  * 
  * @author Henry R
  * @date 2026-02-21

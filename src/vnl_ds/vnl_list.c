@@ -1,13 +1,13 @@
 #include "vnl_ds/vnl_list.h"
 
-void vnl_list_init(VNL_List* list) {
+void vnl_list_init(VnlList* list) {
     if (!list) return;
     list->head = NULL;
     list->tail = NULL;
     list->count = 0;
 }
 
-void vnl_list_push_back(VNL_List* list, VNL_List_Link* link) {
+void vnl_list_push_back(VnlList* list, VnlListLink* link) {
     link->next = NULL;
     link->prev = list->tail;
 
@@ -21,7 +21,7 @@ void vnl_list_push_back(VNL_List* list, VNL_List_Link* link) {
     list->count++;
 }
 
-void vnl_list_push_front(VNL_List* list, VNL_List_Link* link) {
+void vnl_list_push_front(VnlList* list, VnlListLink* link) {
     link->prev = NULL;
     link->next = list->head;
 
@@ -35,7 +35,7 @@ void vnl_list_push_front(VNL_List* list, VNL_List_Link* link) {
     list->count++;
 }
 
-VNL_List_Link* vnl_list_remove(VNL_List* list, VNL_List_Link* link) {
+VnlListLink* vnl_list_remove(VnlList* list, VnlListLink* link) {
     if (link->prev) {
         link->prev->next = link->next;
     } else {
@@ -55,12 +55,12 @@ VNL_List_Link* vnl_list_remove(VNL_List* list, VNL_List_Link* link) {
     return link;
 }
 
-VNL_List_Link* vnl_list_pop_back(VNL_List* list) {
+VnlListLink* vnl_list_pop_back(VnlList* list) {
     if (!list->tail) return NULL;
     return vnl_list_remove(list, list->tail);
 }
 
-VNL_List_Link* vnl_list_pop_front(VNL_List* list) {
+VnlListLink* vnl_list_pop_front(VnlList* list) {
     if (!list->head) return NULL;
     return vnl_list_remove(list, list->head);
 }

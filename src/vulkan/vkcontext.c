@@ -7,7 +7,7 @@
 #include <GLFW/glfw3.h>
 
 #include "misc/vnl_macros.h"
-#include "misc/vnl_structs.h"
+#include "misc/vnl_types.h"
 
 static void vk_context_init_app_info(VkContext* ctx, const VnlConfig* config) {
     VkApplicationInfo* app_info = malloc(sizeof(VkApplicationInfo));
@@ -74,6 +74,7 @@ VkContext* vk_context_init(VnlConfig* config) {
 
     VkResult result = vkCreateInstance(ctx->create_info, NULL, instance);
     if (result != VK_SUCCESS) {
+        printf("Failed to create vulkan context.\n");
         return NULL;
     }
 
