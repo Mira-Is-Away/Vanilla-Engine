@@ -20,9 +20,10 @@ typedef struct VnlConfig VnlConfig;
  * @brief Holds pointers to Vulkan context information.
  */
 typedef struct VkContext {
-    VkInstance* instance;
-    VkApplicationInfo* app_info;
-    VkInstanceCreateInfo* create_info;
+    VkInstance instance;
+    VkApplicationInfo app_info;
+    VkInstanceCreateInfo create_info;
+    VkPhysicalDevice physical_device;
 } VkContext;
 
 /**
@@ -34,8 +35,9 @@ VkContext* vk_context_init(VnlConfig* config);
 
 /**
  * @brief Destroys a given Vulkan context instance.
- * @param ctx A Vulkan context to be destroyed.
  */ 
-void vk_context_destroy(VkContext* ctx);
+void vk_context_destroy();
+
+void vk_pick_physical_devce();
 
 #endif

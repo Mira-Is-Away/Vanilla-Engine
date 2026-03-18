@@ -7,7 +7,6 @@
 #include <vulkan/vulkan.h>
 
 #include "glfw/window.h"
-#include "misc/vnl_ints.h"
 #include "misc/vnl_types.h"
 #include "vulkan/vkcontext.h"
 

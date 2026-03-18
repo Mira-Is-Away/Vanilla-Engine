@@ -12,7 +12,6 @@
 
 #include <GLFW/glfw3.h>
 
-#include "misc/vnl_ints.h"
 #include "misc/vnl_status.h"
 
 typedef struct VnlConfig VnlConfig;

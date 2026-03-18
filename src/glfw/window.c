@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "misc/vnl_ints.h"
 #include "misc/vnl_types.h"
 
 VnlStatus vnl_window_create(VnlConfig* config) {
