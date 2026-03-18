@@ -13,18 +13,14 @@
 
 #include <vulkan/vulkan.h>
 
+typedef struct VkQueueFamilyIndices VkQueueFamilyIndices;
 typedef struct VnlConfig VnlConfig;
 
 /**
  * @struct VkContext
  * @brief Holds pointers to Vulkan context information.
  */
-typedef struct VkContext {
-    VkInstance instance;
-    VkApplicationInfo app_info;
-    VkInstanceCreateInfo create_info;
-    VkPhysicalDevice physical_device;
-} VkContext;
+typedef struct VkContext VkContext;
 
 /**
  * @brief Initialises a Vulkan context instance.
