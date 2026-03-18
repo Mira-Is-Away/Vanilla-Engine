@@ -24,17 +24,7 @@ static VnlStatus vnl_init_glfw() {
 }
 
 static VnlStatus vnl_init_vulkan(VnlConfig* config) {
-    u32 extension_count = 0;
-    vkEnumerateInstanceExtensionProperties(NULL, &extension_count, NULL);
-    printf("%d vulkan extensions supported.\n", extension_count);
-
-    VkContext* vkctx = vk_context_init(config);
-    if (vkctx == NULL) {
-        printf("Failed to create Vulkan instance.\n");
-        return FAILURE;
-    }
-
-    vnl_ctx.vkctx = vkctx;
+    if(!vulkan_init(config, &vnl_ctx)) return FAILURE;
 
     return SUCCESS;
 }
@@ -60,8 +50,9 @@ void vnl_run() {
 }
 
 void vnl_shutdown() {
-    vk_context_destroy(vnl_ctx.vkctx);
+    vulkan_shutdown();
     glfwDestroyWindow(vnl_ctx.config->window.pointer);
+    glfwTerminate();
     printf("Vanilla has shut down successfully.\n");
 }
 

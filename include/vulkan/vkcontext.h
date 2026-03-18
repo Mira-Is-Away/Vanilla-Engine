@@ -13,8 +13,11 @@
 
 #include <vulkan/vulkan.h>
 
+#include "misc/vnl_status.h"
+
 typedef struct VkQueueFamilyIndices VkQueueFamilyIndices;
 typedef struct VnlConfig VnlConfig;
+typedef struct VnlContext VnlContext;
 
 /**
  * @struct VkContext
@@ -27,13 +30,7 @@ typedef struct VkContext VkContext;
  * @return Returns a pointer to valid VkContext.
  * @retval NULL If context initialisation fails.
  */
-VkContext* vk_context_init(VnlConfig* config);
-
-/**
- * @brief Destroys a given Vulkan context instance.
- */ 
-void vk_context_destroy();
-
-void vk_pick_physical_devce();
+VnlStatus vulkan_init(const VnlConfig* config, VnlContext* vnl_ctx);
+void vulkan_shutdown();
 
 #endif
