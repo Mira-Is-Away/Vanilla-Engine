@@ -6,7 +6,7 @@
 
 #include "misc/vnl_types.h"
 
-VnlStatus vnl_window_create(VnlConfig* config) {
+VnlStatus vnl_window_create(const VnlConfig* config, GLFWwindow** out_window) {
     
     GLFWwindow* window = glfwCreateWindow(config->window.width,
                                           config->window.height,
@@ -14,15 +14,16 @@ VnlStatus vnl_window_create(VnlConfig* config) {
                                           NULL, NULL);
     if (!window) {
         printf("Failed to create window.\n");
-        return FAILURE;
+        return VNL_ERROR_WINDOW_CREATION_FAILED;
     }
 
-    config->window.pointer = window;
+    *out_window = window;
 
-    return SUCCESS;
+    return VNL_SUCCESS;
 }
 
-void vnl_window_destroy(VnlWindow* window) {
-    glfwDestroyWindow(window->pointer);
-    free(window);
+void vnl_window_destroy(GLFWwindow* window) {
+    if (window) {
+        glfwDestroyWindow(window);
+    }
 }

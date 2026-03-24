@@ -24,11 +24,10 @@ typedef struct VkContext {
     VkPhysicalDevice physical_device;
     VkDevice device;
     VkQueue graphics_queue;
+    VkSurfaceKHR surface;
 } VkContext;
 
-static VkContext vkctx;
-
-static void vk_context_init_app_info(const VnlConfig* config) {
+static void vk_context_init_app_info(const VnlConfig* config, VkContext* vkctx) {
     VkApplicationInfo app_info = {
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pNext = NULL,
@@ -47,28 +46,15 @@ static void vk_context_init_app_info(const VnlConfig* config) {
         .apiVersion = VK_API_VERSION_1_0
     };
 
-    printf("Built with Vanilla v%d.%d.%d\n",
-        VNL_ENGINE_VERSION_MAJOR,
-        VNL_ENGINE_VERSION_MINOR,
-        VNL_ENGINE_VERSION_PATCH
-    );
-
-    printf("%s build version %d.%d.%d\n",
-        config->title,
-        config->version.major,
-        config->version.minor,
-        config->version.patch
-    );
-
-    vkctx.app_info = app_info;
+    vkctx->app_info = app_info;
 }
 
-static void vk_context_init_instance_create_info() {
+static void vk_context_init_instance_create_info(VkContext* vkctx) {
     VkInstanceCreateInfo create_info = {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pNext = NULL,
         .flags = 0,
-        .pApplicationInfo = &vkctx.app_info,
+        .pApplicationInfo = &vkctx->app_info,
         .enabledLayerCount = 0,
         .ppEnabledLayerNames = 0
     };
@@ -80,28 +66,26 @@ static void vk_context_init_instance_create_info() {
     create_info.enabledExtensionCount = glfw_extension_count;
     create_info.ppEnabledExtensionNames = glfw_extensions;
 
-    vkctx.create_info = create_info;
+    vkctx->create_info = create_info;
 }
 
-static VnlStatus vk_context_init(const VnlConfig* config, VnlContext* vnl_ctx) {
+static VnlStatus vk_context_init(const VnlConfig* config, VkContext* vkctx) {
     u32 extension_count = 0;
     vkEnumerateInstanceExtensionProperties(NULL, &extension_count, NULL);
-    printf("%d vulkan extensions supported.\n", extension_count);
 
     VkInstance instance;
 
-    vk_context_init_app_info(config);
-    vk_context_init_instance_create_info();
+    vk_context_init_app_info(config, vkctx);
+    vk_context_init_instance_create_info(vkctx);
 
-    VkResult result = vkCreateInstance(&vkctx.create_info, NULL, &instance);
+    VkResult result = vkCreateInstance(&vkctx->create_info, NULL, &instance);
     if (result != VK_SUCCESS) {
         printf("Failed to create vulkan context.\n");
-        return FAILURE;
+        return VNL_ERROR_VULKAN_INSTANCE_CREATION_FAILED;
     }
 
-    vkctx.instance = instance;
-    vnl_ctx->vkctx = &vkctx;
-    return SUCCESS;
+    vkctx->instance = instance;
+    return VNL_SUCCESS;
 }
 
 
@@ -134,18 +118,18 @@ static bool vk_is_device_suitable(VkPhysicalDevice device) {
     return indices.has_graphics_family;
 }
 
-static VnlStatus vk_pick_physical_device() {
+static VnlStatus vk_pick_physical_device(VkContext* vkctx) {
     VkPhysicalDevice physical_device = VK_NULL_HANDLE;
     u32 device_count = 0;
-    vkEnumeratePhysicalDevices(vkctx.instance, &device_count, NULL);
+    vkEnumeratePhysicalDevices(vkctx->instance, &device_count, NULL);
 
     if (device_count == 0) {
         printf("Failed to find a GPU with Vulkan support.\n");
-        return FAILURE;
+        return VNL_ERROR_PHYSICAL_DEVICE_NOT_FOUND;
     }
 
     VkPhysicalDevice devices[device_count];
-    vkEnumeratePhysicalDevices(vkctx.instance, &device_count, devices);
+    vkEnumeratePhysicalDevices(vkctx->instance, &device_count, devices);
 
     for (u32 i = 0; i < device_count; i++) {
         if (vk_is_device_suitable(devices[i])) {
@@ -156,17 +140,17 @@ static VnlStatus vk_pick_physical_device() {
 
     if (physical_device == VK_NULL_HANDLE) {
         printf("Failed to find a GPU with Vulkan support.\n");
-        return FAILURE;
+        return VNL_ERROR_PHYSICAL_DEVICE_NOT_FOUND;
     }
 
-    vkctx.physical_device = physical_device;
+    vkctx->physical_device = physical_device;
 
-    return SUCCESS;
+    return VNL_SUCCESS;
 }
 
-static VnlStatus vk_create_logical_device() {
+static VnlStatus vk_create_logical_device(VkContext* vkctx) {
     VkPhysicalDeviceFeatures device_features = { 0 };
-    VkQueueFamilyIndices indices = vk_find_queue_families(vkctx.physical_device);
+    VkQueueFamilyIndices indices = vk_find_queue_families(vkctx->physical_device);
 
     f32 queue_priority = 1.0f;
     VkDeviceQueueCreateInfo queue_create_info = {
@@ -191,27 +175,37 @@ static VnlStatus vk_create_logical_device() {
         .pEnabledFeatures = &device_features
     };
 
-    if (vkCreateDevice(vkctx.physical_device,
+    if (vkCreateDevice(vkctx->physical_device,
                        &create_info,
-                       NULL, &vkctx.device) != VK_SUCCESS) {
+                       NULL, &vkctx->device) != VK_SUCCESS) {
         printf("Failed to create logical device.\n");
-        return FAILURE;
+        return VNL_ERROR_LOGICAL_DEVICE_CREATION_FAILED;
     }
 
-    vkGetDeviceQueue(vkctx.device, indices.graphics_family, 0, &vkctx.graphics_queue);
+    vkGetDeviceQueue(vkctx->device, indices.graphics_family, 0, &vkctx->graphics_queue);
 
-    return SUCCESS;
+    return VNL_SUCCESS;
 }
 
-VnlStatus vulkan_init(const VnlConfig* config, VnlContext* vnl_ctx) {
-    if (!vk_context_init(config, vnl_ctx)) return FAILURE;
-    if (!vk_pick_physical_device()) return FAILURE;
-    if (!vk_create_logical_device()) return FAILURE;
+VnlStatus vulkan_init(const VnlConfig* config, VkContext** out_ctx) {
+    VkContext* vkctx = malloc(sizeof(VkContext));
+    if (!vkctx) return VNL_ERROR_OUT_OF_MEMORY;
+    memset(vkctx, 0, sizeof(VkContext));
 
-    return SUCCESS;
+    VnlStatus status;
+    
+    if ((status = vk_context_init(config, vkctx)) != VNL_SUCCESS) return status;
+    if ((status = vk_pick_physical_device(vkctx)) != VNL_SUCCESS) return status;
+    if ((status = vk_create_logical_device(vkctx)) != VNL_SUCCESS) return status;
+
+    *out_ctx = vkctx;
+    return VNL_SUCCESS;
 }
 
-void vulkan_shutdown() {
-    vkDestroyDevice(vkctx.device, NULL);
-    vkDestroyInstance(vkctx.instance, NULL);
+void vulkan_shutdown(VkContext* vkctx) {
+    if (vkctx) {
+        vkDestroyDevice(vkctx->device, NULL);
+        vkDestroyInstance(vkctx->instance, NULL);
+        free(vkctx);
+    }
 }

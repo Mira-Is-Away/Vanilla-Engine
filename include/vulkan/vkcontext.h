@@ -30,7 +30,7 @@ typedef struct VkContext VkContext;
  * @return Returns a pointer to valid VkContext.
  * @retval NULL If context initialisation fails.
  */
-VnlStatus vulkan_init(const VnlConfig* config, VnlContext* vnl_ctx);
-void vulkan_shutdown();
+VnlStatus vulkan_init(const VnlConfig* config, VkContext** out_ctx);
+void vulkan_shutdown(VkContext* vkctx);
 
 #endif

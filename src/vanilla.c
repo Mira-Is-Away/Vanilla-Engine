@@ -10,60 +10,66 @@
 #include "misc/vnl_types.h"
 #include "vulkan/vkcontext.h"
 
-static VnlContext vnl_ctx;
+struct VnlEngine {
+    const VnlConfig* config;
+    GLFWwindow* window;
+    VkContext* vkctx;
+};
 
 static VnlStatus vnl_init_glfw() {
     if (!glfwInit()) {
         printf("failed to init glfw.\n");
-        return FAILURE;
+        return VNL_ERROR_GLFW_INIT_FAILED;
     }
 
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
-    return SUCCESS;
+    return VNL_SUCCESS;
 }
 
-static VnlStatus vnl_init_vulkan(VnlConfig* config) {
-    if(!vulkan_init(config, &vnl_ctx)) return FAILURE;
+VnlStatus vnl_init(const VnlConfig* config, VnlEngine** out_engine) {
+    VnlStatus status;
 
-    return SUCCESS;
-}
+    if ((status = vnl_init_glfw()) != VNL_SUCCESS) return status;
 
-VnlStatus vnl_init(VnlConfig* config) {
-    if (!vnl_init_glfw()) return FAILURE;
-    if (!vnl_window_create(config)) return FAILURE;
-    if (!vnl_init_vulkan(config)) return FAILURE;
+    VnlEngine* engine = malloc(sizeof(VnlEngine));
+    if (!engine) return VNL_ERROR_OUT_OF_MEMORY;
+    memset(engine, 0, sizeof(VnlEngine));
 
-    vnl_ctx.config = config;
+    engine->config = config;
 
+    if ((status = vnl_window_create(config, &engine->window)) != VNL_SUCCESS) {
+        free(engine);
+        return status;
+    }
+
+    if ((status = vulkan_init(config, &engine->vkctx)) != VNL_SUCCESS) {
+        vnl_window_destroy(engine->window);
+        free(engine);
+        return status;
+    }
+
+    *out_engine = engine;
     printf("Vanilla has initialised successfully.\n");
-    return SUCCESS;
+    return VNL_SUCCESS;
 }
 
-void vnl_run() {
+void vnl_run(VnlEngine* engine) {
+    if (!engine || !engine->window) return;
+
     /*
-    while(!glfwWindowShouldClose(vnl_ctx.window)) {
+    while(!glfwWindowShouldClose(engine->window)) {
         glfwPollEvents();
     }*/
 
     printf("vnl_run() has been called. This function is currently a dummy; Shutting down...\n");
 }
 
-void vnl_shutdown() {
-    vulkan_shutdown();
-    glfwDestroyWindow(vnl_ctx.config->window.pointer);
+void vnl_shutdown(VnlEngine* engine) {
+    if (!engine) return;
+
+    vulkan_shutdown(engine->vkctx);
+    vnl_window_destroy(engine->window);
     glfwTerminate();
+    free(engine);
+    
     printf("Vanilla has shut down successfully.\n");
-}
-
-void vnl_config_set_title(VnlConfig* cfg, const char* title) {
-    cfg->title = title;
-}
-
-void vnl_config_set_version(VnlConfig* cfg, VnlGameVersion version) {
-    cfg->version = version;
-}
-
-void vnl_config_set_target_fps(VnlConfig* cfg, f32 target) {
-    cfg->target_fps = target;
 }

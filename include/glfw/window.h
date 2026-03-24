@@ -18,19 +18,17 @@ typedef struct VnlConfig VnlConfig;
 typedef struct VnlWindow VnlWindow;
 
 /**
- * @brief Creates a GLFW window, returns a VnlWindow wrapper.
- * @param width The window width.
- * @param height The window height.
- * @param title The title of the window.
- * @return A pointer to the created window.
- * @retval NULL If window creation fails.
+ * @brief Creates a GLFW window.
+ * @param[in] config The configuration for the window.
+ * @param[out] out_window A pointer to store the created window handle.
+ * @retval VNL_SUCCESS If window creation was successful.
  */
-VnlStatus vnl_window_create(VnlConfig* config);
+VnlStatus vnl_window_create(const VnlConfig* config, GLFWwindow** out_window);
 
 /**
- * @brief Destroys a VnlWindow entity.
- * @param window A pointer to the window to be destroyed.
+ * @brief Destroys a GLFW window.
+ * @param window The window handle to destroy.
  */
-void vnl_window_destroy(VnlWindow* window);
+void vnl_window_destroy(GLFWwindow* window);
 
 #endif
