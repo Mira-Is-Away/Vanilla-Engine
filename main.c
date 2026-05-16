@@ -18,8 +18,9 @@ int main() {
 
     VnlEngine* engine = NULL;
 
-    if(vnl_init(&config, &engine) != VNL_SUCCESS) {
-        printf("Failed to initialise Vanilla. Terminating program...\n");
+    VnlStatus status = vnl_init(&config, &engine);
+    if(status != VNL_SUCCESS) {
+        printf("Failed to initialise Vanilla (Error Code: %d). Terminating program...\n", status);
         exit(EXIT_FAILURE);
     }
 

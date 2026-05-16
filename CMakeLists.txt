@@ -26,6 +26,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     src/glfw/window.c
     src/vanilla.c
     src/vulkan/vkcontext.c
+    src/vnl_ds/vnl_ilist.c
     src/vnl_ds/vnl_list.c
 )
 

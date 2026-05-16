@@ -12,6 +12,7 @@
 #define VANILLA_VULKAN_VKCONTEXT_H_
 
 #include <vulkan/vulkan.h>
+#include <GLFW/glfw3.h>
 
 #include "misc/vnl_status.h"
 
@@ -30,7 +31,7 @@ typedef struct VkContext VkContext;
  * @return Returns a pointer to valid VkContext.
  * @retval NULL If context initialisation fails.
  */
-VnlStatus vulkan_init(const VnlConfig* config, VkContext** out_ctx);
+VnlStatus vulkan_init(const VnlConfig* config, GLFWwindow* window, VkContext** out_ctx);
 void vulkan_shutdown(VkContext* vkctx);
 
 #endif

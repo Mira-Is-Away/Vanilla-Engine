@@ -1,132 +1,68 @@
 /**
  * @file vnl_list.h
  * 
- * Intrusive doubly-linked list and associated functions and macros
+ * Standard generic doubly-linked list and associated functions
  * 
  * @author Henry R
- * @date 2026-02-16
+ * @date 2026-05-15
  */
 
 #ifndef VANILLA_VNL_DS_LIST_H_
 #define VANILLA_VNL_DS_LIST_H_
 
-#include <stddef.h>
 #include "misc/vnl_types.h"
 
-/**
- * @struct VnlListLink
- * @brief Intrusive link to be embedded in data structures.
- */
-typedef struct VnlListLink {
-    struct VnlListLink* next;
-    struct VnlListLink* prev;
-} VnlListLink;
+typedef struct VnlListNode {
+    /*
+    Pointer to the actual data in memory.
+    Not great for fast iteration through
+    each node, since cache misses will be
+    nearly guaranteed.
+    */
+    void* data;
+    u32 size;
 
-/**
- * @struct VnlList
- * @brief Head of an intrusive doubly linked list.
- */
+    struct VnlListNode* prev;
+    struct VnlListNode* next;
+} VnlListNode;
+
 typedef struct VnlList {
-    VnlListLink* head;
-    VnlListLink* tail;
-    u32 count;
+    VnlListNode* head;
+    VnlListNode* tail;
+    u32 size;
 } VnlList;
 
 /**
- * @brief Retrieves the parent structure from a list link pointer.
- * @param ptr Pointer to the VnlListLink.
- * @param type The type of the parent structure.
- * @param member The name of the VnlListLink member within the parent structure.
+ * @brief Create a VnlList object and allocates a head node.
+ * @return A pointer to the list object that has been created.
  */
-#define vnl_container_of(ptr, type, member) \
-    ((type *)((char *)(ptr) - offsetof(type, member)))
+VnlList* vnl_list_create();
 
 /**
- * @brief Simple iteration over the list links.
- * @param ptr A valid pointer to the desired object's type.
- * @param list Pointer to the list link.
+ * @brief Insert a node at the start of the list.
+ * @param list A pointer to the list object.
+ * @param data A pointer to the data to be stored.
+ * @param size The size of the data in bytes.
+ * @return A pointer to the list object. Mostly useful for chaining.
  */
-#define vnl_list_for_each(ptr, list) \
-    for (ptr = (list)->head; ptr != NULL; ptr = ptr->next)
+VnlList* vnl_list_pushfront(VnlList* list, void* data, u32 size);
 
 /**
- * @brief Iteration safe against removal of the current link.
- * @param ptr A valid pointer to the desired object's type.
- * @param next Must be another valid pointer of the desired object type. Used for internal safety safeguards.
- * param list Pointer to the list link.
+ * @brief Insert a node at the end of the list.
+ * @param list A pointer to the list object.
+ * @param data A pointer to the data to be stored.
+ * @param size The size of the data in bytes.
+ * @return A pointer to the list object. Mostly useful for chaining.
  */
-#define vnl_list_for_each_safe(ptr, next, list) \
-    for (ptr = (list)->head, next = (ptr ? ptr->next : NULL); \
-         ptr != NULL; \
-         ptr = next, next = (ptr ? ptr->next : NULL))
+VnlList* vnl_list_pushback(VnlList* list, void* data, u32 size);
 
 /**
- * @brief Iterates over the list and provides the parent structure pointer directly.
- * @param ptr A valid pointer to the desired object's type.
- * @param list Pointer to the list link.
- * @param member The name of the struct field that holds the pointers to the nodes on the list.
+ * @brief Retrieves the element of the list in the corresponding index.
+ * @param list A pointer to the list object.
+ * @param index The index of the element to be retrieved.
+ * @return A pointer to the data at that index.
+ * @retval NULL If the element is not found.
  */
-#define vnl_list_for_each_entry(ptr, list, member) \
-    for (ptr = ((list)->head ? vnl_container_of((list)->head, __typeof__(*ptr), member) : NULL); \
-         ptr != NULL; \
-         ptr = (ptr->member.next ? vnl_container_of(ptr->member.next, __typeof__(*ptr), member) : NULL))
-
-/**
- * @brief Iterates over the list entries safely (allows removal).
- * @param ptr A valid pointer of the desired object's type.
- * @param next A pointer of the same type as ptr. The macro will use it to iterate over the list. It doesn't need to be initialised.
- * @param list A pointer to the list link.
- * @param member The name of the struct field that holds the pointers to the nodes on the list.
- */
-
-/* you're not expected to understand this */
-#define vnl_list_for_each_entry_safe(ptr, next, list, member) \
-    for (ptr = ((list)->head ? vnl_container_of((list)->head, __typeof__(*ptr), member) : NULL), \
-         next = ((ptr && ptr->member.next) ? vnl_container_of(ptr->member.next, __typeof__(*ptr), member) : NULL); \
-         ptr != NULL; \
-         ptr = next, \
-         next = ((ptr && ptr->member.next) ? vnl_container_of(ptr->member.next, __typeof__(*ptr), member) : NULL))
-
-/**
- * @brief Initializes a list head.
- * @param list Pointer to the list to initialize.
- */
-void vnl_list_init(VnlList* list);
-
-/**
- * @brief Pushes a link to the end of the list.
- * @param list Pointer to the list.
- * @param link Pointer to the link to insert.
- */
-void vnl_list_push_back(VnlList* list, VnlListLink* link);
-
-/**
- * @brief Pushes a link to the front of the list.
- * @param list Pointer to the list.
- * @param link Pointer to the link to insert.
- */
-void vnl_list_push_front(VnlList* list, VnlListLink* link);
-
-/**
- * @brief Removes a specific link from the list.
- * @param list Pointer to the list.
- * @param link Pointer to the link to remove.
- * @return The removed link pointer.
- */
-VnlListLink* vnl_list_remove(VnlList* list, VnlListLink* link);
-
-/**
- * @brief Pops a link from the end of the list.
- * @param list Pointer to the list.
- * @return The removed link pointer, or NULL if empty.
- */
-VnlListLink* vnl_list_pop_back(VnlList* list);
-
-/**
- * @brief Pops a link from the front of the list.
- * @param list Pointer to the list.
- * @return The removed link pointer, or NULL if empty.
- */
-VnlListLink* vnl_list_pop_front(VnlList* list);
+void* vnl_list_get_element_from_index(VnlList* list, u32 index);
 
 #endif

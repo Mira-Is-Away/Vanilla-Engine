@@ -14,7 +14,9 @@
 
 typedef struct VkQueueFamilyIndices {
     bool has_graphics_family;
+    bool has_present_family;
     u32 graphics_family;
+    u32 present_family;
 } VkQueueFamilyIndices;
 
 typedef struct VkContext {
@@ -24,6 +26,7 @@ typedef struct VkContext {
     VkPhysicalDevice physical_device;
     VkDevice device;
     VkQueue graphics_queue;
+    VkQueue present_queue;
     VkSurfaceKHR surface;
 } VkContext;
 
@@ -89,15 +92,20 @@ static VnlStatus vk_context_init(const VnlConfig* config, VkContext* vkctx) {
 }
 
 
-static VkQueueFamilyIndices vk_find_queue_families(VkPhysicalDevice device) {
+static VkQueueFamilyIndices vk_find_queue_families(VkPhysicalDevice device, VkSurfaceKHR surface) {
     VkQueueFamilyIndices indices = {
         .has_graphics_family = false,
         .graphics_family = 0
     };
 
+    // Get the amount of queue families available
     u32 queue_family_count = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, NULL);
 
+    /*
+    Allocate the necessary memory for the queue families found
+    and get the queue families proper
+    */
     VkQueueFamilyProperties queue_families[queue_family_count];
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, queue_families);
 
@@ -107,15 +115,22 @@ static VkQueueFamilyIndices vk_find_queue_families(VkPhysicalDevice device) {
             indices.has_graphics_family = true;
         }
 
-        if (indices.has_graphics_family) break;
+        VkBool32 present_support = false;
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &present_support);
+        if (present_support) {
+            indices.present_family = i;
+            indices.has_present_family = true;
+        }
+
+        if (indices.has_graphics_family && indices.has_present_family) break;
     }
 
     return indices;
 }
 
-static bool vk_is_device_suitable(VkPhysicalDevice device) {
-    VkQueueFamilyIndices indices = vk_find_queue_families(device);
-    return indices.has_graphics_family;
+static bool vk_is_device_suitable(VkPhysicalDevice device, VkSurfaceKHR surface) {
+    VkQueueFamilyIndices indices = vk_find_queue_families(device, surface);
+    return indices.has_graphics_family && indices.has_present_family;
 }
 
 static VnlStatus vk_pick_physical_device(VkContext* vkctx) {
@@ -132,7 +147,7 @@ static VnlStatus vk_pick_physical_device(VkContext* vkctx) {
     vkEnumeratePhysicalDevices(vkctx->instance, &device_count, devices);
 
     for (u32 i = 0; i < device_count; i++) {
-        if (vk_is_device_suitable(devices[i])) {
+        if (vk_is_device_suitable(devices[i], vkctx->surface)) {
             physical_device = devices[i];
             break;
         }
@@ -150,7 +165,8 @@ static VnlStatus vk_pick_physical_device(VkContext* vkctx) {
 
 static VnlStatus vk_create_logical_device(VkContext* vkctx) {
     VkPhysicalDeviceFeatures device_features = { 0 };
-    VkQueueFamilyIndices indices = vk_find_queue_families(vkctx->physical_device);
+    VkQueueFamilyIndices indices = vk_find_queue_families(vkctx->physical_device,
+                                                          vkctx->surface);
 
     f32 queue_priority = 1.0f;
     VkDeviceQueueCreateInfo queue_create_info = {
@@ -187,24 +203,42 @@ static VnlStatus vk_create_logical_device(VkContext* vkctx) {
     return VNL_SUCCESS;
 }
 
-VnlStatus vulkan_init(const VnlConfig* config, VkContext** out_ctx) {
-    VkContext* vkctx = malloc(sizeof(VkContext));
+static VnlStatus vk_create_surface(VkContext* vkctx, GLFWwindow* window) {
+    VkResult result = glfwCreateWindowSurface(vkctx->instance,
+                                              window,
+                                              NULL,
+                                              &vkctx->surface);
+
+    if (result != VK_SUCCESS) {
+        return VNL_ERROR_SURFACE_CREATION_FAILED;
+    }
+
+    return VNL_SUCCESS;
+}
+
+VnlStatus vulkan_init(const VnlConfig* config, GLFWwindow* window, VkContext** out_ctx) {
+    VkContext* vkctx = calloc(1, sizeof(VkContext));
     if (!vkctx) return VNL_ERROR_OUT_OF_MEMORY;
-    memset(vkctx, 0, sizeof(VkContext));
 
     VnlStatus status;
     
-    if ((status = vk_context_init(config, vkctx)) != VNL_SUCCESS) return status;
-    if ((status = vk_pick_physical_device(vkctx)) != VNL_SUCCESS) return status;
-    if ((status = vk_create_logical_device(vkctx)) != VNL_SUCCESS) return status;
+    if ((status = vk_context_init(config, vkctx)) != VNL_SUCCESS) goto cleanup;
+    if ((status = vk_create_surface(vkctx, window)) != VNL_SUCCESS) goto cleanup;
+    if ((status = vk_pick_physical_device(vkctx)) != VNL_SUCCESS) goto cleanup;
+    if ((status = vk_create_logical_device(vkctx)) != VNL_SUCCESS) goto cleanup;
 
     *out_ctx = vkctx;
     return VNL_SUCCESS;
+
+cleanup:
+    vulkan_shutdown(vkctx);
+    return status;
 }
 
 void vulkan_shutdown(VkContext* vkctx) {
     if (vkctx) {
         vkDestroyDevice(vkctx->device, NULL);
+        vkDestroySurfaceKHR(vkctx->instance, vkctx->surface, NULL);
         vkDestroyInstance(vkctx->instance, NULL);
         free(vkctx);
     }

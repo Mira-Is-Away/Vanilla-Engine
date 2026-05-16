@@ -30,9 +30,8 @@ VnlStatus vnl_init(const VnlConfig* config, VnlEngine** out_engine) {
 
     if ((status = vnl_init_glfw()) != VNL_SUCCESS) return status;
 
-    VnlEngine* engine = malloc(sizeof(VnlEngine));
+    VnlEngine* engine = calloc(1, sizeof(VnlEngine));
     if (!engine) return VNL_ERROR_OUT_OF_MEMORY;
-    memset(engine, 0, sizeof(VnlEngine));
 
     engine->config = config;
 
@@ -41,7 +40,7 @@ VnlStatus vnl_init(const VnlConfig* config, VnlEngine** out_engine) {
         return status;
     }
 
-    if ((status = vulkan_init(config, &engine->vkctx)) != VNL_SUCCESS) {
+    if ((status = vulkan_init(config, engine->window, &engine->vkctx)) != VNL_SUCCESS) {
         vnl_window_destroy(engine->window);
         free(engine);
         return status;

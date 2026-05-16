@@ -8,6 +8,9 @@
 
 VnlStatus vnl_window_create(const VnlConfig* config, GLFWwindow** out_window) {
     
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
     GLFWwindow* window = glfwCreateWindow(config->window.width,
                                           config->window.height,
                                           config->title,
