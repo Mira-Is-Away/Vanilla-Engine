@@ -26,4 +26,6 @@ typedef struct {
 
 void vk_render_pass_begin(const VkRenderPassBeginDesc *desc);
 
+void vk_render_pass_end(VkCommandBuffer command_buffer);
+
 #endif

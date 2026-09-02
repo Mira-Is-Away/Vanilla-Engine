@@ -85,3 +85,7 @@ void vk_render_pass_begin(const VkRenderPassBeginDesc *desc) {
     vkCmdBeginRenderPass(desc->command_buffer, &info,
                          VK_SUBPASS_CONTENTS_INLINE);
 }
+
+void vk_render_pass_end(VkCommandBuffer command_buffer) {
+    vkCmdEndRenderPass(command_buffer);
+}

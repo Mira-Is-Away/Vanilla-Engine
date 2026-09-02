@@ -105,7 +105,7 @@ VnlStatus vk_pipeline_create(const VkPipelineDesc *desc,
         (VkPipelineViewportStateCreateInfo){
             .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
             .viewportCount = 1,
-            .scissorCount = 1,
+            .scissorCount  = 1,
         };
 
     VkPipelineRasterizationStateCreateInfo rast_info =

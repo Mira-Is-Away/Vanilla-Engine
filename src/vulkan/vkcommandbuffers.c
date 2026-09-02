@@ -67,5 +67,31 @@ VnlStatus vk_command_buffer_record(const VkCommandBufferRecordDesc *desc) {
     vkCmdBindPipeline(desc->command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       desc->pipeline);
 
+    // Setting viewport
+    VkViewport viewport = {
+        .x        = 0.0f,
+        .y        = 0.0f,
+        .width    = (f32)desc->extent.width,
+        .height   = (f32)desc->extent.height,
+        .minDepth = 0.0f,
+        .maxDepth = 1.0f,
+    };
+    vkCmdSetViewport(desc->command_buffer, 0, 1, &viewport);
+
+    VkRect2D scissor = {
+        .offset = {0, 0},
+        .extent = desc->extent,
+    };
+    vkCmdSetScissor(desc->command_buffer, 0, 1, &scissor);
+
+    vkCmdDraw(desc->command_buffer, 3, 1, 0, 0);
+
+    vk_render_pass_end(desc->command_buffer);
+
+    if (vkEndCommandBuffer(desc->command_buffer) != VK_SUCCESS) {
+        CLARITY_LOG_ERROR("Failed to record Vulkan command buffer.");
+        return VNL_ERROR_COMMAND_BUFFER_END_RECORDING_FAILED;
+    }
+
     return VNL_SUCCESS;
 }
