@@ -105,21 +105,7 @@ VnlStatus vk_pipeline_create(const VkPipelineDesc *desc,
         (VkPipelineViewportStateCreateInfo){
             .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
             .viewportCount = 1,
-            .pViewports =
-                &(VkViewport){
-                    .x        = 0.0f,
-                    .y        = 0.0f,
-                    .width    = (float)desc->extent.width,
-                    .height   = (float)desc->extent.height,
-                    .minDepth = 0.0f,
-                    .maxDepth = 1.0f,
-                },
             .scissorCount = 1,
-            .pScissors =
-                &(VkRect2D){
-                    .offset = {0, 0},
-                    .extent = desc->extent,
-                },
         };
 
     VkPipelineRasterizationStateCreateInfo rast_info =
