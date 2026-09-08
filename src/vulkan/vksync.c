@@ -29,3 +29,9 @@ VnlStatus vk_sync_create(const VkSyncDesc *desc, VkSync *out_sync) {
 
     return VNL_SUCCESS;
 }
+
+void vk_sync_destroy(VkDevice device, VkSync *sync) {
+    vkDestroySemaphore(device, sync->image_available, NULL);
+    vkDestroySemaphore(device, sync->render_finished, NULL);
+    vkDestroyFence(device, sync->in_flight, NULL);
+}
