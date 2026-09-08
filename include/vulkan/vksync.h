@@ -5,6 +5,7 @@
 #include <vulkan/vulkan.h>
 
 typedef struct {
+    VkDevice    device;
     VkSemaphore image_available;
     VkSemaphore render_finished;
     VkFence     in_flight;
@@ -16,6 +17,10 @@ typedef struct {
 
 VnlStatus vk_sync_create(const VkSyncDesc *desc, VkSync *out_sync);
 
-void vk_sync_destroy(VkSync *sync);
+void vk_sync_destroy(VkSync sync);
+
+void vk_wait_in_flight(const VkSync *sync);
+
+void vk_reset_in_flight(VkSync *sync);
 
 #endif
