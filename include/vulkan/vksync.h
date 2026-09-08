@@ -16,6 +16,6 @@ typedef struct {
 
 VnlStatus vk_sync_create(const VkSyncDesc *desc, VkSync *out_sync);
 
-void vk_sync_destroy(VkSync *sync);
+void vk_sync_destroy(VkDevice device, VkSync *sync);
 
 #endif
