@@ -10,6 +10,7 @@
 
 VnlStatus vk_framebuffers_create(const VkFramebufferDesc *desc,
                                  DARRAY(VkFramebuffer)   *out_framebuffers) {
+
     DARRAY_FOREACH(VkImageView, image_view, desc->image_views) {
         VkFramebufferCreateInfo framebuffer_info = (VkFramebufferCreateInfo){
             .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
@@ -18,7 +19,8 @@ VnlStatus vk_framebuffers_create(const VkFramebufferDesc *desc,
             .pAttachments    = image_view,
             .width           = desc->extent.width,
             .height          = desc->extent.height,
-            .layers          = 1};
+            .layers          = 1,
+        };
 
         VkFramebuffer framebuffer;
         if (vkCreateFramebuffer(desc->device, &framebuffer_info, NULL,
