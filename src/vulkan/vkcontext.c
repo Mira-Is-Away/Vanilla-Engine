@@ -23,6 +23,7 @@
 #include <vulkan/vkqueue.h>
 #include <vulkan/vkrenderpass.h>
 #include <vulkan/vkswapchain.h>
+#include <vulkan/vksync.h>
 #include <vulkan/vulkan.h>
 
 typedef struct VkContext {
@@ -37,6 +38,7 @@ typedef struct VkContext {
     VkPipelineInstance    pipeline;
     VkRenderPass          render_pass;
     DARRAY(VkFramebuffer) framebuffers;
+    VkSync                sync;
 } VkContext;
 
 #ifdef MIRA_CLARITY_DEBUG
@@ -374,21 +376,25 @@ VnlStatus vulkan_init(const VnlConfig *config, GLFWwindow *window,
     } VkContext;
     */
 
-    vkctx->instance            = VK_NULL_HANDLE;
-    vkctx->physical_device     = VK_NULL_HANDLE;
-    vkctx->device              = VK_NULL_HANDLE;
-    vkctx->graphics_queue      = VK_NULL_HANDLE;
-    vkctx->present_queue       = VK_NULL_HANDLE;
-    vkctx->surface             = VK_NULL_HANDLE;
-    vkctx->swapchain.swapchain = VK_NULL_HANDLE;
-    vkctx->swapchain.format    = VK_FORMAT_UNDEFINED;
-    vkctx->swapchain.extent    = (VkExtent2D){0, 0};
-    vkctx->swapchain.images    = NULL;
-    vkctx->image_views         = NULL;
-    vkctx->render_pass         = VK_NULL_HANDLE;
-    vkctx->pipeline.pipeline   = VK_NULL_HANDLE;
-    vkctx->pipeline.layout     = VK_NULL_HANDLE;
-    vkctx->framebuffers        = NULL;
+    vkctx->instance             = VK_NULL_HANDLE;
+    vkctx->physical_device      = VK_NULL_HANDLE;
+    vkctx->device               = VK_NULL_HANDLE;
+    vkctx->graphics_queue       = VK_NULL_HANDLE;
+    vkctx->present_queue        = VK_NULL_HANDLE;
+    vkctx->surface              = VK_NULL_HANDLE;
+    vkctx->swapchain.swapchain  = VK_NULL_HANDLE;
+    vkctx->swapchain.format     = VK_FORMAT_UNDEFINED;
+    vkctx->swapchain.extent     = (VkExtent2D){0, 0};
+    vkctx->swapchain.images     = NULL;
+    vkctx->image_views          = NULL;
+    vkctx->render_pass          = VK_NULL_HANDLE;
+    vkctx->pipeline.pipeline    = VK_NULL_HANDLE;
+    vkctx->pipeline.layout      = VK_NULL_HANDLE;
+    vkctx->framebuffers         = NULL;
+    vkctx->sync.device          = VK_NULL_HANDLE;
+    vkctx->sync.image_available = VK_NULL_HANDLE;
+    vkctx->sync.render_finished = VK_NULL_HANDLE;
+    vkctx->sync.in_flight       = VK_NULL_HANDLE;
 
     VnlStatus status;
 
@@ -452,6 +458,13 @@ VnlStatus vulkan_init(const VnlConfig *config, GLFWwindow *window,
     if (status != VNL_SUCCESS)
         goto cleanup;
 
+    VkSyncDesc sync_desc = {
+        .device = vkctx->device,
+    };
+    status = vk_sync_create(&sync_desc, &vkctx->sync);
+    if (status != VNL_SUCCESS)
+        goto cleanup;
+
     *out_ctx = vkctx;
     return VNL_SUCCESS;
 
@@ -463,6 +476,13 @@ cleanup:
 
 void vulkan_shutdown(VkContext *vkctx) {
     if (vkctx) {
+        if (vkctx->sync.device != VK_NULL_HANDLE) {
+            vk_sync_destroy(vkctx->sync);
+            vkctx->sync.device          = VK_NULL_HANDLE;
+            vkctx->sync.image_available = VK_NULL_HANDLE;
+            vkctx->sync.render_finished = VK_NULL_HANDLE;
+            vkctx->sync.in_flight       = VK_NULL_HANDLE;
+        }
         if (vkctx->framebuffers != NULL) {
             DARRAY_FOREACH(VkFramebuffer, framebuffer, vkctx->framebuffers) {
                 vkDestroyFramebuffer(vkctx->device, *framebuffer, NULL);
