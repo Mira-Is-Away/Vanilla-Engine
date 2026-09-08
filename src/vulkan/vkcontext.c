@@ -17,6 +17,8 @@
 #include <core/vnl_status.h>
 #include <core/vnl_types.h>
 #include <vnl_ds/vnl_list.h>
+#include <vulkan/vkcommandbuffers.h>
+#include <vulkan/vkcommandpool.h>
 #include <vulkan/vkframebuffer.h>
 #include <vulkan/vkimageview.h>
 #include <vulkan/vkpipeline.h>
@@ -27,18 +29,20 @@
 #include <vulkan/vulkan.h>
 
 typedef struct VkContext {
-    VkInstance            instance;
-    VkPhysicalDevice      physical_device;
-    VkDevice              device;
-    VkQueue               graphics_queue;
-    VkQueue               present_queue;
-    VkSurfaceKHR          surface;
-    VkSwapchainInstance   swapchain;
-    DARRAY(VkImageView)   image_views;
-    VkPipelineInstance    pipeline;
-    VkRenderPass          render_pass;
-    DARRAY(VkFramebuffer) framebuffers;
-    VkSync                sync;
+    VkInstance              instance;
+    VkPhysicalDevice        physical_device;
+    VkDevice                device;
+    VkQueue                 graphics_queue;
+    VkQueue                 present_queue;
+    VkSurfaceKHR            surface;
+    VkSwapchainInstance     swapchain;
+    DARRAY(VkImageView)     image_views;
+    VkPipelineInstance      pipeline;
+    VkRenderPass            render_pass;
+    DARRAY(VkFramebuffer)   framebuffers;
+    VkCommandPool           command_pool;
+    DARRAY(VkCommandBuffer) command_buffers;
+    VkSync                  sync;
 } VkContext;
 
 #ifdef MIRA_CLARITY_DEBUG
@@ -124,7 +128,8 @@ vk_context_init_instance_create_info(const VkApplicationInfo *app_info) {
         .flags               = 0,
         .pApplicationInfo    = app_info,
         .enabledLayerCount   = 0,
-        .ppEnabledLayerNames = NULL};
+        .ppEnabledLayerNames = NULL,
+    };
 
 #ifdef MIRA_CLARITY_DEBUG
     if (vk_check_validation_layer_support()) {
@@ -278,7 +283,8 @@ static VnlStatus vk_create_logical_device(VkContext *vkctx) {
         .flags            = 0,
         .queueFamilyIndex = indices.graphics_family,
         .queueCount       = 1,
-        .pQueuePriorities = &queue_priority};
+        .pQueuePriorities = &queue_priority,
+    };
 
     DARRAY_PUSH(queue_create_infos, queue_create_info);
 
@@ -289,7 +295,8 @@ static VnlStatus vk_create_logical_device(VkContext *vkctx) {
             .flags            = 0,
             .queueFamilyIndex = indices.present_family,
             .queueCount       = 1,
-            .pQueuePriorities = &queue_priority};
+            .pQueuePriorities = &queue_priority,
+        };
 
         DARRAY_PUSH(queue_create_infos, queue_create_info);
     }
@@ -307,7 +314,8 @@ static VnlStatus vk_create_logical_device(VkContext *vkctx) {
         .ppEnabledLayerNames     = NULL,
         .enabledExtensionCount   = DARRAY_SIZE(device_ext),
         .ppEnabledExtensionNames = device_ext,
-        .pEnabledFeatures        = &device_features};
+        .pEnabledFeatures        = &device_features,
+    };
 
 #ifdef MIRA_CLARITY_DEBUG
     if (vk_check_validation_layer_support()) {
@@ -391,6 +399,8 @@ VnlStatus vulkan_init(const VnlConfig *config, GLFWwindow *window,
     vkctx->pipeline.pipeline    = VK_NULL_HANDLE;
     vkctx->pipeline.layout      = VK_NULL_HANDLE;
     vkctx->framebuffers         = NULL;
+    vkctx->command_pool         = VK_NULL_HANDLE;
+    vkctx->command_buffers      = NULL;
     vkctx->sync.device          = VK_NULL_HANDLE;
     vkctx->sync.image_available = VK_NULL_HANDLE;
     vkctx->sync.render_finished = VK_NULL_HANDLE;
@@ -450,13 +460,37 @@ VnlStatus vulkan_init(const VnlConfig *config, GLFWwindow *window,
     if (status != VNL_SUCCESS)
         goto cleanup;
 
-    VkFramebufferDesc framebuffer_desc = {.device      = vkctx->device,
-                                          .image_views = vkctx->image_views,
-                                          .render_pass = vkctx->render_pass,
-                                          .extent = vkctx->swapchain.extent};
+    VkFramebufferDesc framebuffer_desc = {
+        .device      = vkctx->device,
+        .image_views = vkctx->image_views,
+        .render_pass = vkctx->render_pass,
+        .extent      = vkctx->swapchain.extent,
+    };
     status = vk_framebuffers_create(&framebuffer_desc, &vkctx->framebuffers);
     if (status != VNL_SUCCESS)
         goto cleanup;
+
+    VkCommandPoolDesc command_pool_desc = {
+        .device          = vkctx->device,
+        .physical_device = vkctx->physical_device,
+        .surface         = vkctx->surface,
+    };
+    status = vk_command_pool_create(&command_pool_desc, &vkctx->command_pool);
+    if (status != VNL_SUCCESS)
+        goto cleanup;
+
+    VkCommandBufferDesc command_buffer_desc = {
+        .device               = vkctx->device,
+        .pool                 = vkctx->command_pool,
+        .command_buffer_count = 1,
+    };
+    status = vk_command_buffers_create(&command_buffer_desc,
+                                       &vkctx->command_buffers);
+    if (status != VNL_SUCCESS)
+        goto cleanup;
+    CLARITY_ASSERT(vkctx->command_buffers != NULL,
+                   "Vulkan command buffer creation was successful, but "
+                   "command_buffers is NULL.");
 
     VkSyncDesc sync_desc = {
         .device = vkctx->device,
@@ -482,6 +516,9 @@ void vulkan_shutdown(VkContext *vkctx) {
             vkctx->sync.image_available = VK_NULL_HANDLE;
             vkctx->sync.render_finished = VK_NULL_HANDLE;
             vkctx->sync.in_flight       = VK_NULL_HANDLE;
+        }
+        if (vkctx->command_pool != VK_NULL_HANDLE) {
+            vkDestroyCommandPool(vkctx->device, vkctx->command_pool, NULL);
         }
         if (vkctx->framebuffers != NULL) {
             DARRAY_FOREACH(VkFramebuffer, framebuffer, vkctx->framebuffers) {

@@ -38,7 +38,7 @@ find_package(Vulkan REQUIRED)
 find_package(Threads REQUIRED)
 
 # Enables automatic formatting if clang-format is installed.
-find_program(CLANG_FORMAT_EXE NAMES clang-format)
+find_program(CLANG_FORMAT_EXE NAMES clang-format DOC "Path to clang's autoformatter")
 
 if(CLANG_FORMAT_EXE)
     file(GLOB_RECURSE ALL_SOURCE_FILES 
@@ -108,6 +108,8 @@ target_sources(${PROJECT_NAME} PRIVATE
     src/vulkan/vkshadermodules.c
     src/vulkan/vkpipeline.c
     src/vulkan/vkframebuffer.c
+    src/vulkan/vkcommandpool.c
+    src/vulkan/vkcommandbuffers.c
     src/vulkan/vksync.c
     src/vnl_ds/vnl_ilist.c
     src/vnl_ds/vnl_list.c
