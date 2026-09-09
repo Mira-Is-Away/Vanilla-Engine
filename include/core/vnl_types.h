@@ -27,7 +27,6 @@ typedef struct VnlColour {
     f32 b;
     f32 a;
 } VnlColour;
-typedef struct VnlColour VnlColor;
 
 typedef struct VnlWindow {
     u16 width;
@@ -45,6 +44,7 @@ typedef struct VnlConfig {
     VnlGameVersion version;
     const char    *title;
     f32            target_fps;
+    VnlColour      clear_colour;
 } VnlConfig;
 
 #endif

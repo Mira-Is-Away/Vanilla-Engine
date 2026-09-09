@@ -29,4 +29,6 @@ typedef struct {
 
 VnlStatus vk_command_buffer_record(const VkCommandBufferRecordDesc *desc);
 
+void vk_command_buffer_reset(VkCommandBuffer cmd_buffer);
+
 #endif

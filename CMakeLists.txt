@@ -92,14 +92,10 @@ endforeach()
 
 add_custom_target(CompileShaders DEPENDS ${SPIRV_BIN_FILES})
 
-add_executable(${PROJECT_NAME})
-
-add_dependencies(${PROJECT_NAME} Format CompileShaders)
-
-target_sources(${PROJECT_NAME} PRIVATE
-    main.c
+add_library(vanilla SHARED
     src/glfw/window.c
     src/core/vanilla.c
+    src/renderer/vulkan/vnl_renderer_vk.c
     src/vulkan/vkcontext.c
     src/vulkan/vkqueue.c
     src/vulkan/vkswapchain.c
@@ -115,11 +111,18 @@ target_sources(${PROJECT_NAME} PRIVATE
     src/vnl_ds/vnl_list.c
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE
+add_dependencies(vanilla Format CompileShaders)
+
+set_target_properties(vanilla PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+    OUTPUT_NAME "vanilla"
+)
+
+target_include_directories(vanilla PUBLIC
     ${CMAKE_SOURCE_DIR}/include
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
+target_link_libraries(vanilla PUBLIC
     glfw
     mira_clarity
     mira_darray
@@ -128,19 +131,37 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${CMAKE_DL_LIBS}
 )
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE 
+target_compile_definitions(vanilla PRIVATE 
+    VNL_BUILD_SHARED
     SHADER_DIR="${CMAKE_CURRENT_BINARY_DIR}/shaders/"
 )
 
-if(MSVC)
+add_executable(${PROJECT_NAME} main.c)
 
-    target_compile_definitions(${PROJECT_NAME} PRIVATE _CRT_SECURE_NO_WARNINGS)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    vanilla
+)
+
+if(MSVC)
+    target_compile_definitions(vanilla PRIVATE _CRT_SECURE_NO_WARNINGS)
+    target_compile_options(vanilla PRIVATE
+        $<$<CONFIG:Debug>:/W4 /Zi /Od /utf-8 /permissive->
+        $<$<CONFIG:Release>:/O2 /DNDEBUG>
+        $<$<CONFIG:RelWithDebInfo>:/O2 /Zi>
+    )
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _CRT_SECURE_NO_WARNINGS VNL_USE_SHARED)
     target_compile_options(${PROJECT_NAME} PRIVATE
         $<$<CONFIG:Debug>:/W4 /Zi /Od /utf-8 /permissive->
         $<$<CONFIG:Release>:/O2 /DNDEBUG>
         $<$<CONFIG:RelWithDebInfo>:/O2 /Zi>
     )
 else()
+    target_compile_options(vanilla PRIVATE
+        $<$<CONFIG:Debug>:-Wall -Wextra -Wpedantic -Werror>
+        $<$<CONFIG:Release>:-O3 -DNDEBUG>
+        $<$<CONFIG:RelWithDebInfo>: -O2 -g>
+        $<$<CONFIG:MinSizeRel>:-Os -DNDEBUG>
+    )
     target_compile_options(${PROJECT_NAME} PRIVATE
         $<$<CONFIG:Debug>:-Wall -Wextra -Wpedantic -Werror>
         $<$<CONFIG:Release>:-O3 -DNDEBUG>
