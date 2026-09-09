@@ -1,9 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "mira/vanilla.h"
-
-#include "mira/clarity.h"
+#include <mira/vanilla.h>
 
 int main(void) {
     /*
@@ -13,10 +11,10 @@ int main(void) {
     */
     VnlConfig config = VNL_DEFAULT_CONFIG;
     config.title = "Vanilla SDK v0.1 --- Testing sandbox";
-    config.version.minor = 1;
-    config.window = (VnlWindow){800, 600};
+    config.version = VNL_MAKE_VERSION(0, 1, 0);
+    config.window = VNL_MAKE_WINDOW_SIZE(800, 600);
     
-    VnlEngine* engine = NULL;
+    VnlEngine *engine = NULL;
 
     VnlStatus status = vnl_init(&config, &engine);
 

@@ -35,9 +35,29 @@
  * VnlConfig config = VNL_DEFAULT_CONFIG;
  */
 #define VNL_DEFAULT_CONFIG                                                     \
-    {.window     = {1280, 720},                                                \
-     .version    = {0, 0, 0},                                                  \
-     .title      = "Untitled Vanilla Project",                                 \
-     .target_fps = 60.0f}
+    {                                                                          \
+        .window       = {1280, 720},                                           \
+        .version      = {0, 0, 0},                                             \
+        .title        = "Untitled Vanilla Project",                            \
+        .target_fps   = 60.0f,                                                 \
+    }
+
+/** @brief Helper macro to format the game's version into a VnlGameVersion
+ * struct
+ *
+ * Usage:
+ * config.version = VNL_MAKE_VERSION(1, 0, 0);
+ */
+#define VNL_MAKE_VERSION(major, minor, patch)                                  \
+    (VnlGameVersion) {                                                         \
+        major, minor, patch                                                    \
+    }
+
+/** @brief Helper macro to format the game's window size into a VnlWindow struct
+ *
+ * Usage:
+ * config.window = VNL_MAKE_WINDOW_SIZE(1, 0, 0);
+ */
+#define VNL_MAKE_WINDOW_SIZE(width, height) (VnlWindow){width, height};
 
 #endif
