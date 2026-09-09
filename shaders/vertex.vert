@@ -9,9 +9,9 @@ vec4 colours[3] = vec4[](
 );
 
 vec2 pos[3] = vec2[] (
-    vec2(0, -0.5),
-    vec2(-0.5, 0.5),
-    vec2(0.5, 0.5)
+    vec2(0.0, -0.5),
+    vec2(0.5, 0.5),
+    vec2(-0.5, 0.5)
 );
 
 void main() {

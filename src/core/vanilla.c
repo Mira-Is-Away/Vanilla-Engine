@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <vulkan/vulkan.h>
+
 #ifndef NDEBUG
 #define MIRA_CLARITY_DEBUG
 #endif
@@ -15,12 +15,12 @@
 #include <core/vnl_types.h>
 #include <glfw/window.h>
 #include <mira/darray.h>
-#include <vulkan/vkcontext.h>
+#include <renderer/vnl_renderer.h>
 
 struct VnlEngine {
     const VnlConfig *config;
     GLFWwindow      *window;
-    VkContext       *vkctx;
+    VnlRenderer     *renderer;
 };
 
 static VnlStatus vnl_init_glfw() {
@@ -55,7 +55,7 @@ VnlStatus vnl_init(const VnlConfig *config, VnlEngine **out_engine) {
         return status;
     }
 
-    status = vulkan_init(config, engine->window, &engine->vkctx);
+    status = vnl_renderer_init(config, engine->window, &engine->renderer);
     if (status != VNL_SUCCESS) {
         vnl_window_destroy(engine->window);
         CLARITY_FREE(engine);
@@ -69,23 +69,22 @@ VnlStatus vnl_init(const VnlConfig *config, VnlEngine **out_engine) {
 void vnl_run(VnlEngine *engine) {
     CLARITY_ASSERT(engine != NULL, "Engine pointer is NULL.");
     CLARITY_ASSERT(engine->window != NULL, "Engine window pointer is NULL.");
-    if (!engine || !engine->window)
+    CLARITY_ASSERT(engine->renderer != NULL,
+                   "Engine renderer pointer is NULL.");
+    if (!engine || !engine->window || !engine->renderer)
         return;
 
-    /*
-    while(!glfwWindowShouldClose(engine->window)) {
+    while (!glfwWindowShouldClose(engine->window)) {
         glfwPollEvents();
-    }*/
-
-    CLARITY_LOG_WARN("vnl_run() has been called. This function is currently a "
-                     "dummy; Shutting down...");
+        vnl_renderer_draw(engine->renderer);
+    }
 }
 
 void vnl_shutdown(VnlEngine *engine) {
     if (!engine)
         return;
 
-    vulkan_shutdown(engine->vkctx);
+    vnl_renderer_shutdown(engine->renderer);
     vnl_window_destroy(engine->window);
     glfwTerminate();
     CLARITY_FREE(engine);

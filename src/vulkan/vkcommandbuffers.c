@@ -95,3 +95,7 @@ VnlStatus vk_command_buffer_record(const VkCommandBufferRecordDesc *desc) {
 
     return VNL_SUCCESS;
 }
+
+void vk_command_buffer_reset(VkCommandBuffer cmd_buffer) {
+    vkResetCommandBuffer(cmd_buffer, 0);
+}

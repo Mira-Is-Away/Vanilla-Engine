@@ -46,12 +46,23 @@ VnlStatus vk_render_pass_create(const VkRenderPassDesc *desc,
         .pPreserveAttachments    = NULL,
     };
 
+    VkSubpassDependency dependency = (VkSubpassDependency){
+        .srcSubpass    = VK_SUBPASS_EXTERNAL,
+        .dstSubpass    = 0,
+        .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .srcAccessMask = 0,
+        .dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+    };
+
     VkRenderPassCreateInfo render_pass_info = (VkRenderPassCreateInfo){
         .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
         .attachmentCount = 1,
         .pAttachments    = &colour_attachment,
         .subpassCount    = 1,
         .pSubpasses      = &subpass,
+        .dependencyCount = 1,
+        .pDependencies   = &dependency,
     };
 
     /**

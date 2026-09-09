@@ -4,6 +4,8 @@
 #include <core/vnl_status.h>
 #include <vulkan/vulkan.h>
 
+#define VNL_MAX_FRAMES_IN_FLIGHT 2
+
 typedef struct {
     VkDevice    device;
     VkSemaphore image_available;

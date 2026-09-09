@@ -27,24 +27,6 @@
 #include <vulkan/vkswapchain.h>
 #include <vulkan/vksync.h>
 #include <vulkan/vulkan.h>
-
-typedef struct VkContext {
-    VkInstance              instance;
-    VkPhysicalDevice        physical_device;
-    VkDevice                device;
-    VkQueue                 graphics_queue;
-    VkQueue                 present_queue;
-    VkSurfaceKHR            surface;
-    VkSwapchainInstance     swapchain;
-    DARRAY(VkImageView)     image_views;
-    VkPipelineInstance      pipeline;
-    VkRenderPass            render_pass;
-    DARRAY(VkFramebuffer)   framebuffers;
-    VkCommandPool           command_pool;
-    DARRAY(VkCommandBuffer) command_buffers;
-    VkSync                  sync;
-} VkContext;
-
 #ifdef MIRA_CLARITY_DEBUG
 static const char *validation_layers[] = {"VK_LAYER_KHRONOS_validation"};
 static const u32   validation_layer_count =
@@ -384,27 +366,30 @@ VnlStatus vulkan_init(const VnlConfig *config, GLFWwindow *window,
     } VkContext;
     */
 
-    vkctx->instance             = VK_NULL_HANDLE;
-    vkctx->physical_device      = VK_NULL_HANDLE;
-    vkctx->device               = VK_NULL_HANDLE;
-    vkctx->graphics_queue       = VK_NULL_HANDLE;
-    vkctx->present_queue        = VK_NULL_HANDLE;
-    vkctx->surface              = VK_NULL_HANDLE;
-    vkctx->swapchain.swapchain  = VK_NULL_HANDLE;
-    vkctx->swapchain.format     = VK_FORMAT_UNDEFINED;
-    vkctx->swapchain.extent     = (VkExtent2D){0, 0};
-    vkctx->swapchain.images     = NULL;
-    vkctx->image_views          = NULL;
-    vkctx->render_pass          = VK_NULL_HANDLE;
-    vkctx->pipeline.pipeline    = VK_NULL_HANDLE;
-    vkctx->pipeline.layout      = VK_NULL_HANDLE;
-    vkctx->framebuffers         = NULL;
-    vkctx->command_pool         = VK_NULL_HANDLE;
-    vkctx->command_buffers      = NULL;
-    vkctx->sync.device          = VK_NULL_HANDLE;
-    vkctx->sync.image_available = VK_NULL_HANDLE;
-    vkctx->sync.render_finished = VK_NULL_HANDLE;
-    vkctx->sync.in_flight       = VK_NULL_HANDLE;
+    vkctx->instance            = VK_NULL_HANDLE;
+    vkctx->physical_device     = VK_NULL_HANDLE;
+    vkctx->device              = VK_NULL_HANDLE;
+    vkctx->graphics_queue      = VK_NULL_HANDLE;
+    vkctx->present_queue       = VK_NULL_HANDLE;
+    vkctx->surface             = VK_NULL_HANDLE;
+    vkctx->swapchain.swapchain = VK_NULL_HANDLE;
+    vkctx->swapchain.format    = VK_FORMAT_UNDEFINED;
+    vkctx->swapchain.extent    = (VkExtent2D){0, 0};
+    vkctx->swapchain.images    = NULL;
+    vkctx->image_views         = NULL;
+    vkctx->render_pass         = VK_NULL_HANDLE;
+    vkctx->pipeline.pipeline   = VK_NULL_HANDLE;
+    vkctx->pipeline.layout     = VK_NULL_HANDLE;
+    vkctx->framebuffers        = NULL;
+    vkctx->command_pool        = VK_NULL_HANDLE;
+    vkctx->command_buffers     = NULL;
+    for (u32 i = 0; i < VNL_MAX_FRAMES_IN_FLIGHT; i++) {
+        vkctx->sync[i].device          = VK_NULL_HANDLE;
+        vkctx->sync[i].image_available = VK_NULL_HANDLE;
+        vkctx->sync[i].render_finished = VK_NULL_HANDLE;
+        vkctx->sync[i].in_flight       = VK_NULL_HANDLE;
+    }
+    vkctx->current_frame = 0;
 
     VnlStatus status;
 
@@ -482,7 +467,7 @@ VnlStatus vulkan_init(const VnlConfig *config, GLFWwindow *window,
     VkCommandBufferDesc command_buffer_desc = {
         .device               = vkctx->device,
         .pool                 = vkctx->command_pool,
-        .command_buffer_count = 1,
+        .command_buffer_count = VNL_MAX_FRAMES_IN_FLIGHT,
     };
     status = vk_command_buffers_create(&command_buffer_desc,
                                        &vkctx->command_buffers);
@@ -495,9 +480,11 @@ VnlStatus vulkan_init(const VnlConfig *config, GLFWwindow *window,
     VkSyncDesc sync_desc = {
         .device = vkctx->device,
     };
-    status = vk_sync_create(&sync_desc, &vkctx->sync);
-    if (status != VNL_SUCCESS)
-        goto cleanup;
+    for (u32 i = 0; i < VNL_MAX_FRAMES_IN_FLIGHT; i++) {
+        status = vk_sync_create(&sync_desc, &vkctx->sync[i]);
+        if (status != VNL_SUCCESS)
+            goto cleanup;
+    }
 
     *out_ctx = vkctx;
     return VNL_SUCCESS;
@@ -510,12 +497,17 @@ cleanup:
 
 void vulkan_shutdown(VkContext *vkctx) {
     if (vkctx) {
-        if (vkctx->sync.device != VK_NULL_HANDLE) {
-            vk_sync_destroy(vkctx->sync);
-            vkctx->sync.device          = VK_NULL_HANDLE;
-            vkctx->sync.image_available = VK_NULL_HANDLE;
-            vkctx->sync.render_finished = VK_NULL_HANDLE;
-            vkctx->sync.in_flight       = VK_NULL_HANDLE;
+        for (u32 i = 0; i < VNL_MAX_FRAMES_IN_FLIGHT; i++) {
+            if (vkctx->sync[i].device != VK_NULL_HANDLE) {
+                vk_sync_destroy(vkctx->sync[i]);
+                vkctx->sync[i].device          = VK_NULL_HANDLE;
+                vkctx->sync[i].image_available = VK_NULL_HANDLE;
+                vkctx->sync[i].render_finished = VK_NULL_HANDLE;
+                vkctx->sync[i].in_flight       = VK_NULL_HANDLE;
+            }
+        }
+        if (vkctx->command_buffers != NULL) {
+            DARRAY_FREE(vkctx->command_buffers);
         }
         if (vkctx->command_pool != VK_NULL_HANDLE) {
             vkDestroyCommandPool(vkctx->device, vkctx->command_pool, NULL);
