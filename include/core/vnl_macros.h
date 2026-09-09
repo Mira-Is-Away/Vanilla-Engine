@@ -15,6 +15,20 @@
 #define VNL_ENGINE_VERSION_MINOR 1
 #define VNL_ENGINE_VERSION_PATCH 0
 
+#if defined(_WIN32)
+#if defined(VNL_BUILD_SHARED)
+#define VNL_API __declspec(dllexport)
+#elif defined(VNL_USE_SHARED)
+#define VNL_API __declspec(dllimport)
+#else
+#define VNL_API
+#endif
+#elif defined(__GNUC__) && __GNUC__ >= 4
+#define VNL_API __attribute__((visibility("default")))
+#else
+#define VNL_API
+#endif
+
 /** @brief Macro with the engine's default configuration data.
  *
  * Usage:
