@@ -35,7 +35,7 @@ static VnlStatus vnl_init_glfw() {
 
 VnlStatus vnl_init(const VnlConfig *config, VnlEngine **out_engine) {
     CLARITY_ASSERT(config != NULL, "Config cannot be NULL.");
-    CLARITY_ASSERT(out_engine != NULL, "Output engine pointer cannot be NULL.");
+    CLARITY_ASSERT(out_engine != NULL, "**out_engine must not be NULL.");
 
     VnlStatus status;
 

@@ -58,9 +58,9 @@ VnlStatus vk_command_buffer_record(const VkCommandBufferRecordDesc *desc) {
         .render_pass    = desc->render_pass,
         .framebuffers   = desc->framebuffers,
         .image_index    = desc->image_index,
-        .offset         = {0, 0},
+        .offset         = desc->offset,
         .extent         = desc->extent,
-        .clear_colour   = {1.0f, 1.0f, 1.0f, 1.0f},
+        .clear_colour   = desc->clear_colour,
     };
     vk_render_pass_begin(&render_pass_desc);
 

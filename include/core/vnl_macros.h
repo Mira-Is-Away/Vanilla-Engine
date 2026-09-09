@@ -40,6 +40,7 @@
         .version      = {0, 0, 0},                                             \
         .title        = "Untitled Vanilla Project",                            \
         .target_fps   = 60.0f,                                                 \
+        .clear_colour = {0.7f, 0.7f, 0.7f, 1.0f},                              \
     }
 
 /** @brief Helper macro to format the game's version into a VnlGameVersion
@@ -58,6 +59,12 @@
  * Usage:
  * config.window = VNL_MAKE_WINDOW_SIZE(1, 0, 0);
  */
-#define VNL_MAKE_WINDOW_SIZE(width, height) (VnlWindow){width, height};
+#define VNL_MAKE_WINDOW_SIZE(width, height)                                    \
+    (VnlWindow) {                                                              \
+        width, height                                                          \
+    }
+
+#define VNL_MAKE_COLOUR(r, g, b)                                               \
+    (VnlColour){(float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, 1.0f}
 
 #endif

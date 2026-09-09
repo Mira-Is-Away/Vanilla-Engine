@@ -26,6 +26,7 @@
 
 struct VnlRenderer {
     VkContext *vkctx;
+    VnlColour  clear_colour;
 };
 
 VnlStatus vnl_renderer_init(const VnlConfig *config, GLFWwindow *window,
@@ -45,6 +46,8 @@ VnlStatus vnl_renderer_init(const VnlConfig *config, GLFWwindow *window,
         CLARITY_FREE(renderer);
         return status;
     }
+
+    renderer->clear_colour = config->clear_colour;
 
     *out_renderer = renderer;
     return VNL_SUCCESS;
@@ -79,7 +82,7 @@ VnlStatus vnl_renderer_draw(VnlRenderer *renderer) {
         .image_index    = image_index,
         .offset         = (VnlVec2){0, 0},
         .extent         = vkctx->swapchain.extent,
-        .clear_colour   = (VnlColour){0.7f, 0.7f, 0.7f, 1.0f},
+        .clear_colour   = renderer->clear_colour,
         .pipeline       = vkctx->pipeline.pipeline,
     };
 

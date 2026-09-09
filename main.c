@@ -13,6 +13,7 @@ int main(void) {
     config.title = "Vanilla SDK v0.1 --- Testing sandbox";
     config.version = VNL_MAKE_VERSION(0, 1, 0);
     config.window = VNL_MAKE_WINDOW_SIZE(800, 600);
+    config.clear_colour = VNL_MAKE_COLOUR(160, 160, 160);
     
     VnlEngine *engine = NULL;
 
